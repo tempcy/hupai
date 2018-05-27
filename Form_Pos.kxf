@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<object type="TAForm" name="Form_Pos">
+	<properties>
+		<property name="Left" vt="Int16">644</property>
+		<property name="Top" vt="Int16">453</property>
+		<property name="Width" vt="Int16">482</property>
+		<property name="Height" vt="Int16">449</property>
+		<property name="Caption" vt="String">Pos</property>
+		<property name="Color" vt="Ident">clBtnFace</property>
+		<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
+		<property name="Font.Color" vt="Ident">clWindowText</property>
+		<property name="Font.Height" vt="Int8">-11</property>
+		<property name="Font.Name" vt="String">MS Sans Serif</property>
+		<property name="Font.Style" vt="Set"/>
+		<property name="OldCreateOrder" vt="False">False</property>
+		<property name="Visible" vt="True">True</property>
+		<property name="Style" vt="Int32">348127232</property>
+		<property name="ExStyle" vt="Int16">264</property>
+		<property name="Version" vt="String">1.04</property>
+		<property name="FormOptOnEvent" vt="True">True</property>
+		<property name="FormOptExpVars" vt="False">False</property>
+		<property name="FormOptPopulate" vt="False">False</property>
+		<property name="FormOptVarsForSet" vt="False">False</property>
+		<property name="FormOptIndentChar" vt="Int8">0</property>
+		<property name="FormOptIndentCount" vt="Int8">1</property>
+		<property name="FormOptIndentInit" vt="Int8">0</property>
+		<property name="FormOptVarScope" vt="Int8">0</property>
+		<property name="Resizing" vt="Set"/>
+		<property name="PixelsPerInch" vt="Int8">96</property>
+		<property name="TextHeight" vt="Int8">13</property>
+	</properties>
+	<components>
+		<object type="TATab" name="TabPos">
+			<properties>
+				<property name="Left" vt="Int8">0</property>
+				<property name="Top" vt="Int8">0</property>
+				<property name="Width" vt="Int16">465</property>
+				<property name="Height" vt="Int16">385</property>
+				<property name="ActivePage" vt="Ident">TabSheet_Pic3</property>
+				<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
+				<property name="Font.Color" vt="Ident">clWindowText</property>
+				<property name="Font.Height" vt="Int8">-11</property>
+				<property name="Font.Name" vt="String">Arial</property>
+				<property name="Font.Style" vt="Set"/>
+				<property name="ParentFont" vt="False">False</property>
+				<property name="TabOrder" vt="Int8">0</property>
+				<property name="CtrlStyle" vt="Int32">1409482752</property>
+				<property name="CtrlExStyle" vt="Int8">0</property>
+				<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
+			</properties>
+			<components>
+				<object type="TTabSheet" name="TabSheet_Pic1">
+					<properties>
+						<property name="Caption" vt="String">Point1~5</property>
+						<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
+						<property name="Font.Color" vt="Ident">clWindowText</property>
+						<property name="Font.Height" vt="Int8">-11</property>
+						<property name="Font.Name" vt="String">MS Sans Serif</property>
+						<property name="Font.Style" vt="Set"/>
+						<property name="ImageIndex" vt="Int8">-1</property>
+						<property name="ParentFont" vt="False">False</property>
+					</properties>
+					<components>
+						<object type="TAPic" name="Pic1">
+							<properties>
+								<property name="Left" vt="Int8">4</property>
+								<property name="Top" vt="Int8">-1</property>
+								<property name="Width" vt="Int16">450</property>
+								<property name="Height" vt="Int16">353</property>
+								<property name="CtrlStyle" vt="Int32">1342308622</property>
+								<property name="CtrlExStyle" vt="Int8">0</property>
+								<property name="PicturePath" vt="String">C:\work\hupai1.jpg</property>
+								<property name="TabOrder" vt="Int8">0</property>
+								<property name="Resizing" vt="Set"/>
+								<property name="Stretch" vt="Ident">sRealSize</property>
+							</properties>
+							<components/>
+						</object>
+					</components>
+				</object>
+				<object type="TTabSheet" name="TabSheet_Pic2">
+					<properties>
+						<property name="Caption" vt="String">Point6~9</property>
+						<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
+						<property name="Font.Color" vt="Ident">clWindowText</property>
+						<property name="Font.Height" vt="Int8">-11</property>
+						<property name="Font.Name" vt="String">MS Sans Serif</property>
+						<property name="Font.Style" vt="Set"/>
+						<property name="ImageIndex" vt="Int8">-1</property>
+						<property name="ParentFont" vt="False">False</property>
+					</properties>
+					<components>
+						<object type="TAPic" name="Pic2">
+							<properties>
+								<property name="Left" vt="Int8">4</property>
+								<property name="Top" vt="Int8">-1</property>
+								<property name="Width" vt="Int16">450</property>
+								<property name="Height" vt="Int16">353</property>
+								<property name="CtrlStyle" vt="Int32">1342308622</property>
+								<property name="CtrlExStyle" vt="Int8">0</property>
+								<property name="PicturePath" vt="String">C:\work\hupai2.jpg</property>
+								<property name="TabOrder" vt="Int8">0</property>
+								<property name="Resizing" vt="Set"/>
+								<property name="Stretch" vt="Ident">sRealSize</property>
+							</properties>
+							<components/>
+						</object>
+					</components>
+				</object>
+				<object type="TTabSheet" name="TabSheet_Pic3">
+					<properties>
+						<property name="Caption" vt="String">Point10</property>
+						<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
+						<property name="Font.Color" vt="Ident">clWindowText</property>
+						<property name="Font.Height" vt="Int8">-11</property>
+						<property name="Font.Name" vt="String">MS Sans Serif</property>
+						<property name="Font.Style" vt="Set"/>
+						<property name="ImageIndex" vt="Int8">-1</property>
+						<property name="ParentFont" vt="False">False</property>
+					</properties>
+					<components>
+						<object type="TAPic" name="Pic3">
+							<properties>
+								<property name="Left" vt="Int8">4</property>
+								<property name="Top" vt="Int8">-1</property>
+								<property name="Width" vt="Int16">450</property>
+								<property name="Height" vt="Int16">353</property>
+								<property name="CtrlStyle" vt="Int32">1342308622</property>
+								<property name="CtrlExStyle" vt="Int8">0</property>
+								<property name="PicturePath" vt="String">C:\work\hupai3.jpg</property>
+								<property name="TabOrder" vt="Int8">0</property>
+								<property name="Resizing" vt="Set"/>
+								<property name="Stretch" vt="Ident">sRealSize</property>
+							</properties>
+							<components/>
+						</object>
+					</components>
+				</object>
+			</components>
+		</object>
+		<object type="TAStatusBar" name="StatusBar_Pos">
+			<properties>
+				<property name="Left" vt="Int8">0</property>
+				<property name="Top" vt="Int16">386</property>
+				<property name="Width" vt="Int16">466</property>
+				<property name="Height" vt="Int8">25</property>
+				<property name="Panels" vt="Collection">
+					<collection>
+						<item>
+							<property name="Alignment" vt="Ident">taCenter</property>
+							<property name="Text" vt="String">mouse position :</property>
+							<property name="Width" vt="Int8">120</property>
+						</item>
+						<item>
+							<property name="Alignment" vt="Ident">taRightJustify</property>
+							<property name="Text" vt="String">X =</property>
+							<property name="Width" vt="Int8">30</property>
+						</item>
+						<item>
+							<property name="Alignment" vt="Ident">taCenter</property>
+							<property name="Text" vt="String">????</property>
+							<property name="Width" vt="Int8">35</property>
+						</item>
+						<item>
+							<property name="Alignment" vt="Ident">taRightJustify</property>
+							<property name="Text" vt="String">Y =</property>
+							<property name="Width" vt="Int8">30</property>
+						</item>
+						<item>
+							<property name="Alignment" vt="Ident">taCenter</property>
+							<property name="Text" vt="String">????</property>
+							<property name="Width" vt="Int8">35</property>
+						</item>
+						<item>
+							<property name="Text" vt="WString">МбКѕЈєЗлК№УГКу±кЦРјьЙи¶ЁО»ЦГЧш±к</property>
+							<property name="Width" vt="Int8">50</property>
+						</item>
+					</collection>
+				</property>
+				<property name="CtrlStyle" vt="Int32">1342177280</property>
+				<property name="CtrlExStyle" vt="Int8">0</property>
+				<property name="Description" vt="String">StatusBar_Pos</property>
+			</properties>
+			<components/>
+		</object>
+	</components>
+</object>
