@@ -1,0 +1,13 @@
+While WinKill("字库建造工具")
+	Sleep(1000)
+WEnd
+FileDelete(@ScriptDir & "\stat.ini")
+Run("ChLibBuilder.exe", @ScriptDir)
+WinWait("字库建造工具")
+WinActivate("字库建造工具")
+Send("^o")
+WinWait("另存为")
+WinActivate("另存为")
+Send("hupai.txt{ENTER}!s")
+Sleep(100)
+WinActivate("字库建造工具")

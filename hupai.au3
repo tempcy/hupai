@@ -56,7 +56,7 @@ For $i = 0 to 60
 Next
 _GUICtrlListView_AddArray($ListViewData, $aData)
 
-#Region ### START Koda GUI section ### Form=c:\work\form_info.kxf
+#Region ### START Koda GUI section ### Form=form_info.kxf
 $Form_Info = GUICreate("Info", 424, 79, 391, 286, $WS_POPUP, $WS_EX_TOPMOST)
 GUISetBkColor(0xA6CAF0)
 $LabelTime = GUICtrlCreateLabel("11:00:00", 0, 0, 176, 56, $SS_CENTER, $GUI_WS_EX_PARENTDRAG)
@@ -84,15 +84,15 @@ GUISetState(@SW_SHOW)
 ;~ Func INFOWM_NCHITTEST($hWnd, $iMsg, $iwParam, $ilParam)
 ;~ EndFunc   ;==>INFOWM_NCHITTEST
 
-#Region ### START Koda GUI section ### Form=c:\work\form_pos.kxf
+#Region ### START Koda GUI section ### Form=form_pos.kxf
 $Form_Pos = GUICreate("Pos", 467, 412, 644, 453, 0, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
 $TabPos = GUICtrlCreateTab(0, 0, 465, 385)
 $TabSheet_Pic1 = GUICtrlCreateTabItem("位置1~5")
-$Pic1 = GUICtrlCreatePic("C:\work\hupai1.jpg", 8, 24, 450, 353)
+$Pic1 = GUICtrlCreatePic(@ScriptDir & "\hupai1.jpg", 8, 24, 450, 353)
 $TabSheet_Pic2 = GUICtrlCreateTabItem("位置6~9")
-$Pic2 = GUICtrlCreatePic("C:\work\hupai2.jpg", 8, 24, 450, 353)
+$Pic2 = GUICtrlCreatePic(@ScriptDir & "\hupai2.jpg", 8, 24, 450, 353)
 $TabSheet_Pic3 = GUICtrlCreateTabItem("位置10")
-$Pic3 = GUICtrlCreatePic("C:\work\hupai3.jpg", 8, 24, 450, 353)
+$Pic3 = GUICtrlCreatePic(@ScriptDir & "\hupai3.jpg", 8, 24, 450, 353)
 GUICtrlCreateTabItem("")
 $StatusBar_Pos = _GUICtrlStatusBar_Create($Form_Pos)
 Dim $StatusBar_Pos_PartsWidth[6] = [120, 150, 185, 215, 250, -1]
@@ -106,7 +106,7 @@ _GUICtrlStatusBar_SetText($StatusBar_Pos, "提示：请使用鼠标中键设定�
 _GUICtrlStatusBar_SetMinHeight($StatusBar_Pos, 25)
 #EndRegion ### END Koda GUI section ###
 
-#Region ### START Koda GUI section ### Form=c:\work\form_setting.kxf
+#Region ### START Koda GUI section ### Form=form_setting.kxf
 $Form_Setting = GUICreate("Setting", 331, 244, 364, 346, -1, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
 $Tab_Setting = GUICtrlCreateTab(0, 0, 330, 210)
 
@@ -318,13 +318,13 @@ $Magnify_left = IniRead("hupai.ini", "Tools", "Magnify_left", "0")
 $Magnify_top = IniRead("hupai.ini", "Tools", "Magnify_top", "0")
 
 ;ocr obj create
-ShellExecuteWait("regsvr32.exe", "/s " & "SimPlugOCR.dll", @AppDataDir)
+ShellExecuteWait("regsvr32.exe", "/s " & "SimPlugOCR.dll", @ScriptDir)
 Global $oShell = ObjCreate("simplugocr.ocr")
 If $oShell = 0 Then
 	MsgBox(0, "警告", "注册OCR控件失败！")
 	Exit
 EndIf
-$oShell.SetDict("hupai.txt")
+$oShell.SetDict(@ScriptDir & "\hupai.txt")
 $oShell.SetFontColor($g_sFontColor)
 $oShell.similarcolor = $g_iSimilarColor
 $oShell.similarfont = $g_iSimilarFont
@@ -417,7 +417,7 @@ Func RestoreParameter() ;restore parameters in setting window from variable
 	Else
 		GUICtrlSetState($CheckboxBeep, $GUI_CHECKED)
 	EndIf
-	GUICtrlSetData($EditRemark, FileRead("readme.txt"))
+	GUICtrlSetData($EditRemark, FileRead(@ScriptDir & "\readme.txt"))
 EndFunc   ;==>RestoreParameter
 
 Func InitializeInfo()
@@ -1039,7 +1039,6 @@ Func HandleGuiMsg()
 				SetButtonState($GUI_DISABLE)
 				GUICtrlSetData($ButtonLibBuilder, "处理中")
 				GUICtrlSetState($ButtonLibBuilder, $GUI_DISABLE)
-				;MsgBox(262144, 'Debug line ~' & @ScriptLineNumber, 'Selection:' & @CRLF & 'BuildLib()' & @CRLF & @CRLF & 'Return:' & @CRLF & "lag here!") ;### Debug MSGBOX
 				BuildLib()
 				SetButtonState($GUI_ENABLE)
 				GUICtrlSetData($ButtonLibBuilder, "开始")
@@ -1141,20 +1140,7 @@ EndFunc   ;==>SetMagSource
 
 Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbols are included
 	ToolTip("准备文档中，请等待...",@DesktopWidth / 2,@DesktopWidth / 2, "", $TIP_WARNINGICON, $TIP_CENTER)
-	While WinKill("字库建造工具")
-		Sleep(1000)
-		;MsgBox(262144, 'Debug line ~' & @ScriptLineNumber, 'Selection:' & @CRLF & 'WinKill("字库建造工具")' & @CRLF & @CRLF & 'Return:' & @CRLF & "kill found!") ;### Debug MSGBOX
-	WEnd
-	Run("ChLibBuilder.exe", @ScriptDir)
-	;MsgBox(262144, 'Debug line ~' & @ScriptLineNumber, 'Selection:' & @CRLF & 'Run("ChLibBuilder.exe", @ScriptDir)' & @CRLF & @CRLF & 'Return:' & @CRLF & "Run ChLibBuilder.exe ok!") ;### Debug MSGBOX
-	WinWait("字库建造工具")
-	WinActivate("字库建造工具")
-	Send("^o")
-	WinWait("另存为")
-	WinActivate("另存为")
-	Send("hupai.txt{ENTER}!s")
-	Sleep(100)
-	WinActivate("字库建造工具")
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaiLib.au3')
 	Sleep(100)
 	ControlSetText("字库建造工具", "", "[CLASS:TEdit; INSTANCE:17]", $g_sFontColor)
 	Sleep(100)
@@ -1169,10 +1155,11 @@ Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbol
 		GUICtrlSetState($hCB, $GUI_ENABLE + $GUI_UNCHECKED)
 	Next
 	ToolTip("")
-	MsgBox(262144,"准备好了","切换到拍牌页面（或者测试页面moni.51hupai.org），看到时间和价格信息，然后点确定！");esc退出
+	MsgBox(262144,"准备好了","切换到拍牌页面（或者测试页面moni.51hupai.org），看到时间和价格信息，然后点确定！（截屏）");esc退出
 	While Not $LibComplete
 		WinActivate("字库建造工具")
 		Send("!yt")
+		Sleep(1000)
 		Do
 			$aMouse = MouseGetPos()
 			ToolTip("框选时间和价格信息区域！然后按回车！", $aMouse[0], $aMouse[1] - 25)
@@ -1180,6 +1167,9 @@ Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbol
 				ToolTip("")
 				WinActivate("字库建造工具")
 				Send("^s")
+				For $hCB In $aCB
+					GUICtrlSetState($hCB, $GUI_DISABLE)
+				Next
 				Return
 			EndIf
 			Sleep(25)
@@ -1204,6 +1194,9 @@ Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbol
 						ToolTip("")
 						WinActivate("字库建造工具")
 						Send("^s")
+						For $hCB In $aCB
+							GUICtrlSetState($hCB, $GUI_DISABLE)
+						Next
 						Return
 					EndIf
 					If  _IsPressed("20") Then
@@ -1217,6 +1210,7 @@ Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbol
 				Until _IsPressed("0D")
 				ToolTip("")
 				Sleep(1000)
+				Local $hLB = ControlGetHandle("字库建造工具", "", "[CLASS:TListBox; INSTANCE:1]")
 				LibChrCheck(_GUICtrlListBox_GetText($hLB, $n))
 			Else
 				LibChrCheck($sChr)
@@ -1229,11 +1223,14 @@ Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbol
 				$LibComplete = False
 				Do
 					$aMouse = MouseGetPos()
-					ToolTip("字符不完整，准备好时间和价格信息，然后按退格键继续！", $aMouse[0], $aMouse[1] - 25)
+					ToolTip("字符不完整，请重新确认拍牌页面（或者测试页面moni.51hupai.org）的时间和价格信息显示正常，然后按退格键继续！（截屏）", $aMouse[0], $aMouse[1] - 25)
 					If _IsPressed("1B") Then
 						ToolTip("")
 						WinActivate("字库建造工具")
 						Send("^s")
+						For $hCB In $aCB
+							GUICtrlSetState($hCB, $GUI_DISABLE)
+						Next
 						Return
 					EndIf
 					Sleep(25)
@@ -1246,6 +1243,9 @@ Func BuildLib() ;run chlibbuild.exe to check if all numbers and necessary symbol
 	MsgBox(262144,"完成","字符检查完整！请点确定返回！")
 	WinActivate("字库建造工具")
 	Send("^s")
+	For $hCB In $aCB
+		GUICtrlSetState($hCB, $GUI_DISABLE)
+	Next
 EndFunc   ;==>BuildLib
 
 Func LibChrCheck($chr)
