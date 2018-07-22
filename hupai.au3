@@ -520,28 +520,28 @@ Func RestartMainLoop() ;reset parameters and restart main loop
 EndFunc   ;==>RestartMainLoop
 
 Func Bid2nd() ;bid 2nd
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift2)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift2)
 	If $g_bBeep = 1 Then
 		_WinAPI_MessageBeep(0)
 	EndIf
 EndFunc   ;==>Bid2nd
 
 Func Bid3rd() ;bid 3rd
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift3a)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift3a)
 	If $g_bBeep = 1 Then
 		_WinAPI_MessageBeep(0)
 	EndIf
 EndFunc   ;==>Bid3rd
 
 Func BidBlock() ;rebid when check block
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift3b)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift3b)
 	If $g_bBeep = 1 Then
 		_WinAPI_MessageBeep(0)
 	EndIf
 EndFunc   ;==> BidBlock
 
 Func BidCheckout() ;rebid when check fail
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift3c)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaibidx.au3' & " " & $p3x & " " & $p3y & " " & $p4x & " " & $p4y & " " & $p5x & " " & $p5y & " " & $drift3c)
 	If $g_bBeep = 1 Then
 		_WinAPI_MessageBeep(0)
 	EndIf
@@ -551,7 +551,7 @@ Func ReflashChptcha() ;reflash chptcha when it is not shown in the apply form
 	If $g_bMagnify = 1 Then
 		_ScreenCapture_CaptureWnd(@ScriptDir & "\ChptchaSnap\" & @YEAR & "-" & @MON & "-" & @MDAY & " " & @HOUR & "=" & @MIN & "=" & @SEC & ".bmp", WinGetHandle("hupaiMag"))
 	EndIf
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaireflash.au3' & " " & $p6x & " " & $p6y & " " & $p7x & " " & $p7y)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaireflash.au3' & " " & $p6x & " " & $p6y & " " & $p7x & " " & $p7y)
 	_WinAPI_MessageBeep(0)
 EndFunc   ;==>ReflashChptcha
 
@@ -559,7 +559,7 @@ Func ApplyBid() ;apply price manually in the apply form
 	If $g_bMagnify = 1 Then
 		_ScreenCapture_CaptureWnd(@ScriptDir & "\ChptchaSnap\" & @YEAR & "-" & @MON & "-" & @MDAY & " " & @HOUR & "=" & @MIN & "=" & @SEC & ".bmp", WinGetHandle("hupaiMag"))
 	EndIf
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaiapply.au3' & " " & $p8x & " " & $p8y)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaiapply.au3' & " " & $p8x & " " & $p8y)
 	$aData[$second_last + 1][6] = "Num+"
 	If $g_bPriceLog Then
 		_GUICtrlListView_AddSubItem($ListViewData, $second_last + 1, $aData[$second_last + 1][6], 6)
@@ -570,7 +570,7 @@ Func ApplyBid() ;apply price manually in the apply form
 EndFunc   ;==>ApplyBid
 
 Func CancelBid() ;cancel bid and close the bid apply form
-	Run(@AutoItExe & ' /AutoIt3ExecuteScript hupaicancel.au3' & " " & $p9x & " " & $p9y & " " & $p10x & " " & $p10y)
+	RunWait(@AutoItExe & ' /AutoIt3ExecuteScript hupaicancel.au3' & " " & $p9x & " " & $p9y & " " & $p10x & " " & $p10y)
 	If $g_bBeep = 1 Then
 		_WinAPI_MessageBeep(0)
 	EndIf
@@ -1000,7 +1000,7 @@ Func HandleGuiMsg()
 			EndSwitch
 		Case $ButtonCopyLog
 			_ArrayToClip($aData, @TAB)
-			ClipPut(ClipGet() & @CRLF _
+			ClipPut(ClipGet() & @CRLF & @CRLF _
 				& "二次出价时间=" & $bid2time & @CRLF _
 				& "三次出价时间=" & $bid3time & @CRLF _
 				& "出价检查时间=" & $check3time & @CRLF _
@@ -1376,9 +1376,8 @@ While 1 ;mainloop
 		Case 3
 			If StringRight($time, 2) >= $check3time Then
 				;rebid when block, need to apply manually
-				If $price - $bid3price + $drift3a <= $bcl Then
+				If $price - $bid3price + $drift3a < $bcl Then
 					CancelBid()
-					Sleep(100)
 					BidBlock()
 					$bid4price = $price + $drift3b
 					$status = 7
@@ -1391,9 +1390,8 @@ While 1 ;mainloop
 						_GUICtrlListView_AddSubItem($ListViewData, $second_last + 1, $aData[$second_last + 1][6], 6)
 					EndIf
 				;rebid when check fail, need to apply manually
-				ElseIf $difference > $ucl or $difference <$lcl Then
+				ElseIf $difference > $ucl or $difference < $lcl Then
 					CancelBid()
-					Sleep(100)
 					BidCheckout()
 					$bid4price = $price + $drift3c
 					$status = 4
