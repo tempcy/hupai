@@ -22,11 +22,14 @@ Global Const $g_sLastMinute = "11:29:" ;最后一分钟文本
 Global Const $g_sFontColor = "FF0000" ;包含信息字符的颜色
 Global Const $g_iSimilarColor = 196 ; 包含信息字符颜色的允许差
 Global Const $g_iSimilarFont = 5 ;包含信息字符点阵的允许差
+Global Const $g_sDefPlan = "Bid2:30;Bid3:44;Check3:52;Apply3:55;MSec:333;BCL:200;UCL:800;LCL:600;Drift2:300;Drift3:1000;Drift3U:400;Drift3L:700;DifferenceLimit:400" ;默认方案字符串
 
 #Include <Array.au3>
 #include <ButtonConstants.au3>
+#include <ComboConstants.au3>
 #Include <Date.au3>
 #include <EditConstants.au3>
+#include <GuiComboBox.au3>
 #include <GUIConstantsEx.au3>
 #include <GuiListBox.au3>
 #include <GuiListView.au3>
@@ -45,7 +48,7 @@ Global $oString, $status, $time, $price, $beforetime, $difference, $tt, $fps, $l
 Global $bid2time, $bid3time, $check3time, $apply3time, $msec, $bcl, $ucl, $lcl, $drift2, $drift3a, $drift3b, $drift3c, $acl ; 参数
 Global $p1x, $p1y, $p2x, $p2y, $p3x, $p3y, $p4x, $p4y, $p5x, $p5y, $p6x, $p6y, $p7x, $p7y, $p8x, $p8y, $p9x, $p9y, $p10x, $p10y ; 坐标
 Global $current_point, $second_last, $price_last, $aData[61][7]  ; 记录
-Global $g_bPaused, $g_bPosCal, $g_bInfo, $g_bPriceLog, $g_bBeep, $g_bLatency, $g_bLibBuilding ; 标志
+Global $g_bPaused, $g_bPosCal, $g_bInfo, $g_bPriceLog, $g_bBeep, $g_bLatency, $g_bLibBuilding, $g_bImportPlan; 标志
 Global $g_bMagnify, $p_idMagnify, $g_dMagFactor, $MagSource_left, $MagSource_top, $MagSource_width, $MagSource_height, $Magnify_left, $Magnify_top ; 放大镜
 
 ;data form : last 1 minute price log
@@ -106,15 +109,12 @@ _GUICtrlStatusBar_SetText($StatusBar_Pos, "提示：请使用鼠标中键设定�
 _GUICtrlStatusBar_SetMinHeight($StatusBar_Pos, 25)
 #EndRegion ### END Koda GUI section ###
 
-#Region ### START Koda GUI section ### Form=form_setting.kxf
-$Form_Setting = GUICreate("Setting", 331, 244, 364, 346, -1, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
+#Region ### START Koda GUI section ### Form=c:\work\form_setting.kxf
+$Form_Setting = GUICreate("Setting", 331, 241, 455, 238, -1, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
 $Tab_Setting = GUICtrlCreateTab(0, 0, 330, 210)
-
 $TabSheet_RM = GUICtrlCreateTabItem("说明")
-GUICtrlSetState(-1,$GUI_SHOW)
-$EditRemark = GUICtrlCreateEdit("", 6, 27, 318, 178, BitOR($ES_AUTOVSCROLL,$ES_WANTRETURN,$WS_VSCROLL))
+$EditRemark = GUICtrlCreateEdit("", 6, 27, 318, 178, BitOR($ES_AUTOVSCROLL,$ES_WANTRETURN,$WS_HSCROLL,$WS_VSCROLL))
 GUICtrlSetData(-1, "EditRemark")
-
 $TabSheet_Lib = GUICtrlCreateTabItem("建立字库")
 $ButtonLibBuilder = GUICtrlCreateButton("开始", 131, 175, 65, 29)
 $Checkbox1 = GUICtrlCreateCheckbox("数字1", 49, 40, 60, 25)
@@ -127,8 +127,6 @@ $Checkbox4 = GUICtrlCreateCheckbox("数字4", 49, 112, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
 $Checkbox5 = GUICtrlCreateCheckbox("数字5", 49, 136, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
-$Checkbox10 = GUICtrlCreateCheckbox("符号：", 229, 40, 60, 25)
-GUICtrlSetState(-1, $GUI_DISABLE)
 $Checkbox6 = GUICtrlCreateCheckbox("数字6", 139, 40, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
 $Checkbox7 = GUICtrlCreateCheckbox("数字7", 139, 64, 60, 25)
@@ -139,9 +137,10 @@ $Checkbox9 = GUICtrlCreateCheckbox("数字9", 139, 112, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
 $Checkbox0 = GUICtrlCreateCheckbox("数字0", 139, 136, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
+$Checkbox10 = GUICtrlCreateCheckbox("符号：", 229, 40, 60, 25)
+GUICtrlSetState(-1, $GUI_DISABLE)
 $Checkbox11 = GUICtrlCreateCheckbox("换行符_", 229, 64, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
-
 $TabSheet_Pos = GUICtrlCreateTabItem("屏幕坐标")
 $ButtonPosCal = GUICtrlCreateButton("校准", 131, 175, 65, 29)
 $Inputp1x = GUICtrlCreateInput("????", 56, 48, 33, 21)
@@ -192,16 +191,18 @@ $LabelRx = GUICtrlCreateLabel("X", 256, 27, 11, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
 $LabelRy = GUICtrlCreateLabel("Y", 296, 27, 11, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-
 $TabSheet_Para = GUICtrlCreateTabItem("时间和价格")
-$InputB2T = GUICtrlCreateInput("??", 100, 54, 25, 21)
-$InputB3T = GUICtrlCreateInput("??", 100, 78, 25, 21)
-$InputC3T = GUICtrlCreateInput("??", 100, 102, 25, 21)
-$InputA3T = GUICtrlCreateInput("??", 100, 174, 25, 21)
-$InputMsec = GUICtrlCreateInput("???", 132, 174, 33, 21)
-$InputUCL = GUICtrlCreateInput("???", 212, 126, 33, 21)
-$InputLCL = GUICtrlCreateInput("???", 212, 150, 33, 21)
-$InputACL = GUICtrlCreateInput("???", 212, 174, 33, 21)
+$ComboPara = GUICtrlCreateCombo("Def", 92, 182, 65, 25, BitOR($CBS_DROPDOWN,$CBS_AUTOHSCROLL))
+GUICtrlSetData(-1, "PlanA|PlanB|PlanC")
+$InputB2T = GUICtrlCreateInput("??", 92, 54, 25, 21)
+$InputB3T = GUICtrlCreateInput("??", 92, 78, 25, 21)
+$InputC3T = GUICtrlCreateInput("??", 92, 102, 25, 21)
+$InputA3T = GUICtrlCreateInput("??", 92, 150, 25, 21)
+$InputMsec = GUICtrlCreateInput("???", 120, 150, 33, 21)
+$InputBCL = GUICtrlCreateInput("???", 204, 102, 33, 21)
+$InputLCL = GUICtrlCreateInput("???", 186, 126, 33, 21)
+$InputUCL = GUICtrlCreateInput("???", 222, 126, 33, 21)
+$InputACL = GUICtrlCreateInput("???", 204, 150, 33, 21)
 $InputD2P = GUICtrlCreateInput("???", 284, 54, 33, 21)
 $InputD3P = GUICtrlCreateInput("???", 284, 78, 33, 21)
 $InputDBP = GUICtrlCreateInput("???", 284, 102, 33, 21)
@@ -212,40 +213,57 @@ $LabelBid3_C = GUICtrlCreateLabel("三次出价", 12, 81, 52, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
 $LabelCheck3_C = GUICtrlCreateLabel("补抢检查", 12, 105, 52, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelApply3_C = GUICtrlCreateLabel("强制确认", 12, 177, 52, 17)
+GUICtrlSetTip(-1, "检查当前中标价是否符合预期。")
+$LabelApply3_C = GUICtrlCreateLabel("强制确认", 12, 153, 52, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelTime_R = GUICtrlCreateLabel("时间", 68, 33, 28, 17)
+GUICtrlSetTip(-1, "补抢检查未触发重新出价时，满足时间或差额条件任意一个，即触发强制确认出价。")
+$LabelTime_R = GUICtrlCreateLabel("时间：", 60, 33, 40, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelSec_R = GUICtrlCreateLabel("秒", 107, 33, 16, 17)
+$LabelSec_R = GUICtrlCreateLabel("秒", 99, 33, 16, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelMsec_R = GUICtrlCreateLabel("毫秒", 134, 33, 28, 17)
+$LabelMsec_R = GUICtrlCreateLabel("毫秒", 126, 33, 28, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelConment_R = GUICtrlCreateLabel("说明", 172, 33, 28, 17)
+$LabelConment_R = GUICtrlCreateLabel("说明", 156, 33, 28, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelLimmit_R = GUICtrlCreateLabel("价差", 216, 33, 28, 17)
+$LabelLimmit_R = GUICtrlCreateLabel("价差", 208, 33, 28, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
 $LabelHotkey_R = GUICtrlCreateLabel("按键", 252, 33, 30, 21)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
+GUICtrlSetTip(-1, "Num + 确定 | Num - 取消 | Num * 刷新验证码")
 $LabelDrift_R = GUICtrlCreateLabel("加价", 288, 33, 28, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelF7_K = GUICtrlCreateLabel("F7", 260, 57, 22, 21)
+$LabelF7_K = GUICtrlCreateLabel("F7", 259, 57, 21, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelF10_K = GUICtrlCreateLabel("F10", 260, 81, 22, 21)
+GUICtrlSetTip(-1, "自动触发")
+$LabelF10_K = GUICtrlCreateLabel("F10", 259, 81, 21, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelF8_K = GUICtrlCreateLabel("F8", 260, 105, 22, 21)
+GUICtrlSetTip(-1, "自动触发")
+$LabelF8_K = GUICtrlCreateLabel("F8", 259, 105, 21, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelF9_K = GUICtrlCreateLabel("F9", 260, 129, 22, 21)
+GUICtrlSetTip(-1, "自动触发")
+$LabelF9_K = GUICtrlCreateLabel("F9", 259, 129, 21, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelBlock_M = GUICtrlCreateLabel("阻塞<", 172, 105, 34, 17)
+GUICtrlSetTip(-1, "自动触发")
+$LabelBlock_M = GUICtrlCreateLabel("阻塞", 157, 105, 28, 17, $SS_CENTER)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelLCL_M = GUICtrlCreateLabel("超差>", 172, 129, 34, 17)
+GUICtrlSetTip(-1, "如三次出价和补抢检查时的中标价差额小于阻塞限，则触发重新出价F8，须快速输入验证码并手动确认。")
+$LabelCL_M = GUICtrlCreateLabel("超差", 157, 129, 28, 17, $SS_CENTER)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelUCL_M = GUICtrlCreateLabel("超差<", 172, 153, 34, 17)
+GUICtrlSetTip(-1, "如三次出价价格与补抢检查时的中标价差额不在允许差范围内，则触发重新出价F9，须快速输入验证码并手动确认。")
+$LabelDiff_M = GUICtrlCreateLabel("差额", 157, 153, 28, 17, $SS_CENTER)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$LabelDiff_M = GUICtrlCreateLabel("差额=", 172, 177, 34, 17)
+GUICtrlSetTip(-1, "三次出价价格与当前中标价的差额达到设定后自动出价。")
+$ButtonOutput = GUICtrlCreateButton("导出", 261, 181, 65, 23)
+GUICtrlSetTip(-1, "当前方案导出")
+$ButtonImport = GUICtrlCreateButton("导入", 196, 181, 65, 23)
+GUICtrlSetTip(-1, "导入方案字串")
+$LabelCurrentPlan = GUICtrlCreateLabel("当前方案", 12, 185, 52, 17)
 GUICtrlSetBkColor(-1, 0xFFFFFF)
-$InputBCL = GUICtrlCreateInput("???", 212, 102, 33, 21)
-
+GUICtrlSetTip(-1, "包含时间、价格参数")
+$ButtonNewPlan = GUICtrlCreateButton("+", 160, 181, 23, 23)
+GUICtrlSetTip(-1, "新增方案")
+$ButtonDelPlan = GUICtrlCreateButton("-", 66, 181, 23, 23)
+GUICtrlSetTip(-1, "删除方案")
 $TabSheet_Tools = GUICtrlCreateTabItem("工具")
 $CheckboxPricelog = GUICtrlCreateCheckbox("数据记录", 20, 41, 65, 17)
 $CheckboxMagn = GUICtrlCreateCheckbox("验证码放大镜", 20, 73, 97, 17)
@@ -260,7 +278,6 @@ GUICtrlSetData(-1, 8)
 GUICtrlSetState(-1, $GUI_DISABLE)
 $ButtonSetMag = GUICtrlCreateButton("区域设定", 168, 69, 65, 25)
 $CheckboxBeep = GUICtrlCreateCheckbox("按键提示音", 20, 137, 81, 17)
-
 GUICtrlCreateTabItem("")
 $ButtonApply = GUICtrlCreateButton("应用", 131, 210, 65, 29)
 $ButtonSave = GUICtrlCreateButton("保存", 196, 210, 65, 29)
@@ -316,6 +333,8 @@ $MagSource_width = IniRead("hupai.ini", "Tools", "Source_width", "0")
 $MagSource_height = IniRead("hupai.ini", "Tools", "Source_height", "0")
 $Magnify_left = IniRead("hupai.ini", "Tools", "Magnify_left", "0")
 $Magnify_top = IniRead("hupai.ini", "Tools", "Magnify_top", "0")
+$aPlan = IniReadSection("hupai.ini", "Parameter")
+$CurrentPlan = IniRead("hupai.ini", "Display", "CurrentPlan", "Def")
 
 ;ocr obj create
 ShellExecuteWait("regsvr32.exe", "/s " & "SimPlugOCR.dll", @ScriptDir)
@@ -418,6 +437,11 @@ Func RestoreParameter() ;restore parameters in setting window from variable
 		GUICtrlSetState($CheckboxBeep, $GUI_CHECKED)
 	EndIf
 	GUICtrlSetData($EditRemark, FileRead(@ScriptDir & "\readme.txt"))
+	_GUICtrlComboBox_ResetContent($ComboPara)
+	For $i = 1 To $aPlan[0][0]
+		_GUICtrlComboBox_AddString($ComboPara, $aPlan[$i][0])
+	Next
+	GUICtrlSetData($ComboPara, $CurrentPlan)
 EndFunc   ;==>RestoreParameter
 
 Func InitializeInfo()
@@ -650,6 +674,7 @@ Func SaveIniFile()
 	IniWrite("hupai.ini", "Drift", "Drift3", $drift3a)
 	IniWrite("hupai.ini", "Drift", "Drift3U", $drift3b)
 	IniWrite("hupai.ini", "Drift", "Drift3L", $drift3c)
+	IniWrite("hupai.ini", "Drift", "DifferenceLimit", $acl)
 	IniWrite("hupai.ini", "Tools", "Info", $g_bInfo)
 	IniWrite("hupai.ini", "Tools", "PriceLog", $g_bPriceLog)
 	IniWrite("hupai.ini", "Tools", "Magnify", $g_bMagnify)
@@ -679,6 +704,11 @@ Func SaveIniFile()
 		IniWrite("hupai.ini", "Tools", "Source_width", $MagSource_width)
 		IniWrite("hupai.ini", "Tools", "Source_height", $MagSource_height)
 	EndIf
+	$sPlan = "Bid2:" & $bid2time & ";Bid3:" & $bid3time & ";Check3:"& $check3time & ";Apply3:" & $apply3time & ";MSec:" & $msec & _
+			";BCL:" & $bcl & ";UCL:" & $ucl & ";LCL:" & $lcl & _
+			";Drift2:" & $drift2 & ";Drift3:" & $drift3a & ";Drift3U:" & $drift3b & ";Drift3L:" & $drift3c & ";DifferenceLimit:" & $acl
+	IniWrite("hupai.ini", "Parameter", GUICtrlRead($ComboPara), $sPlan)
+	IniWrite("hupai.ini", "Display", "CurrentPlan", GUICtrlRead($ComboPara))
 EndFunc   ;==>SaveIniFile
 
 Func SubLoop_Pause() ;pause main loop, will start a new loop in main loop
@@ -1081,8 +1111,140 @@ Func HandleGuiMsg()
 					$g_bBeep = 0
 					_WinAPI_MessageBeep(0)
 			EndSwitch
+		Case $ComboPara
+			If Not $g_bImportPlan Then
+				$CurrentPlan = GUICtrlRead($ComboPara)
+				$sPlan = IniRead("hupai.ini", "Parameter", $CurrentPlan, $g_sDefPlan)
+				FillinPlan($sPlan)
+			EndIf
+		Case $ButtonOutput
+			$sPlan = "Bid2:" & GUICtrlRead($InputB2T) & _
+					";Bid3:" & GUICtrlRead($InputB3T) & _
+					";Check3:"& GUICtrlRead($InputC3T) & _
+					";Apply3:" & GUICtrlRead($InputA3T) & _
+					";MSec:" & GUICtrlRead($InputMsec) & _
+					";BCL:" & GUICtrlRead($InputBCL) & _
+					";UCL:" & GUICtrlRead($InputUCL) & _
+					";LCL:" & GUICtrlRead($InputLCL) & _
+					";Drift2:" & GUICtrlRead($InputD2P) & _
+					";Drift3:" & GUICtrlRead($InputD3P) & _
+					";Drift3U:" & GUICtrlRead($InputDBP) & _
+					";Drift3L:" & GUICtrlRead($InputDCP) & _
+					";DifferenceLimit:" & GUICtrlRead($InputACL)
+			If InputBox("导出参数", "是否将当前参数导出到粘贴板？", $sPlan) <> "" Then
+				ClipPut($sPlan)
+			EndIf
+		Case $ButtonImport
+			$g_bImportPlan = True
+			$sPlan = InputBox("导入参数", "请将参数字符串复制到下框中，然后点击OK。")
+			If $sPlan <> "" Then
+				Switch MsgBox($MB_YESNO, "导入参数", "是否覆盖当前方案？否则新建一个方案。")
+					Case $IDYES
+						If FillinPlan($sPlan) = 0 Then
+							MsgBox($MB_SYSTEMMODAL, "警告", "参数解析错误，导入失败！")
+						EndIf
+					Case $IDNO
+						$sPlanName = InputBox("导入参数","请输入方案名称。")
+						If NewPlan($sPlanName) = 1 Then
+							If FillinPlan($sPlan) = 0 Then
+								MsgBox($MB_SYSTEMMODAL, "警告", "参数解析错误，导入失败！")
+							EndIf
+						EndIf
+				EndSwitch
+			Else
+				MsgBox($MB_SYSTEMMODAL, "警告", "非法参数，导入失败！")
+			EndIf
+			$g_bImportPlan = False
+		Case $ButtonNewPlan
+			$g_bImportPlan = True
+			$sPlanName = InputBox("导入参数","请输入方案名称。")
+			NewPlan($sPlanName)
+			$g_bImportPlan = False
+		Case $ButtonDelPlan
+			$g_bImportPlan = True
+			If _GUICtrlComboBox_GetCount($ComboPara) <= 1 Then
+				MsgBox($MB_SYSTEMMODAL, "出错", "不能删除最后一个方案！")
+			Else
+				If MsgBox($MB_YESNO, "警告", "是否确认删除当前方案？") = $IDYES Then
+					$i = _GUICtrlComboBox_FindString($ComboPara, $CurrentPlan)
+					_GUICtrlComboBox_DeleteString($ComboPara, $i)
+					IniDelete("hupai.ini", "Parameter", $CurrentPlan)
+					If $i > 0 Then
+						_GUICtrlComboBox_SetCurSel($ComboPara, $i - 1)
+					Else
+						_GUICtrlComboBox_SetCurSel($ComboPara, 0)
+					EndIf
+					If IniRead("hupai.ini", "Display", "CurrentPlan", "") = $CurrentPlan Then
+						IniWrite("hupai.ini", "Display", "CurrentPlan", GUICtrlRead($ComboPara))
+					EndIf
+					$CurrentPlan = GUICtrlRead($ComboPara)
+					$sPlan = IniRead("hupai.ini", "Parameter", $CurrentPlan, $g_sDefPlan)
+					FillinPlan($sPlan)
+				EndIf
+			EndIf
+			$g_bImportPlan = False
 	EndSwitch
 EndFunc   ;==>HandleGuiMsg
+
+Func NewPlan($plan_name)
+	If $plan_name <> "" Then
+		$i = _GUICtrlComboBox_FindString($ComboPara, $plan_name)
+		If $i = -1 Then
+			_GUICtrlComboBox_AddString($ComboPara, $plan_name)
+			$i = _GUICtrlComboBox_FindString($ComboPara, $plan_name)
+			_GUICtrlComboBox_SetCurSel($ComboPara, $i)
+			$CurrentPlan = GUICtrlRead($ComboPara)
+			Return 1
+		Else
+			MsgBox($MB_SYSTEMMODAL, "警告", "发现重名方案，创建失败！")
+			Return 0
+		EndIf
+	Else
+		MsgBox($MB_SYSTEMMODAL, "警告", "非法的方案名称，创建失败！")
+		Return 0
+	EndIf
+EndFunc
+
+Func FillinPlan($plan_srting)
+	$aParas = StringSplit($plan_srting, ";")
+	If $aParas[0] <> 13 Then Return 0
+	For $i = 1 To $aParas[0]
+		$aPara = StringSplit($aParas[$i], ":")
+		If $aPara[0] = 2 Then
+			Switch $aPara[1]
+				Case "Bid2"
+					GUICtrlSetData($InputB2T, $aPara[2])
+				Case "Bid3"
+					GUICtrlSetData($InputB3T, $aPara[2])
+				Case "Check3"
+					GUICtrlSetData($InputC3T, $aPara[2])
+				Case "Apply3"
+					GUICtrlSetData($InputA3T, $aPara[2])
+				Case "MSec"
+					GUICtrlSetData($InputMsec, $aPara[2])
+				Case "BCL"
+					GUICtrlSetData($InputBCL, $aPara[2])
+				Case "UCL"
+					GUICtrlSetData($InputUCL, $aPara[2])
+				Case "LCL"
+					GUICtrlSetData($InputLCL, $aPara[2])
+				Case "DifferenceLimit"
+					GUICtrlSetData($InputACL, $aPara[2])
+				Case "Drift2"
+					GUICtrlSetData($InputD2P, $aPara[2])
+				Case "Drift3"
+					GUICtrlSetData($InputD3P, $aPara[2])
+				Case "Drift3U"
+					GUICtrlSetData($InputDBP, $aPara[2])
+				Case "Drift3L"
+					GUICtrlSetData($InputDCP, $aPara[2])
+			EndSwitch
+		Else
+			Return 0
+		EndIf
+	Next
+	Return 1
+EndFunc
 
 Func SetMagSource()
 	;draw rectangle prepare gui and p1
@@ -1288,6 +1450,7 @@ Func VarInit()
 	$g_bPaused = False
 	$g_bPosCal = False
 	$g_bLibBuilding = False
+	$g_bImportPlan = False
 EndFunc   ;==>VarInit
 
 GuiInit() ;Gui Initialize
