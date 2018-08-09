@@ -38,17 +38,18 @@ Global Const $g_sDefPlan = "Bid2:30;Bid3:44;Check3:52;Apply3:55;MSec:333;BCL:200
 #include <ScreenCapture.au3>
 #include <StaticConstants.au3>
 #include <TabConstants.au3>
+#include <WINAPI.au3>
 #include <WinAPIError.au3>
 #include <WinAPIGdi.au3>
 #include <WindowsConstants.au3>
 #pragma compile(AutoItExecuteAllowed, true)
 
 ;var setup
-Global $oString, $status, $time, $price, $beforetime, $difference, $tt, $fps, $lag, $bid2price, $bid3price, $bid4price ; 信息
+Global $oString, $status, $time, $price, $beforetime, $difference, $sec_info, $sec_hint, $fps, $lag, $bid2price, $bid3price, $bid4price ; 信息
 Global $bid2time, $bid3time, $check3time, $apply3time, $msec, $bcl, $ucl, $lcl, $drift2, $drift3a, $drift3b, $drift3c, $acl ; 参数
 Global $p1x, $p1y, $p2x, $p2y, $p3x, $p3y, $p4x, $p4y, $p5x, $p5y, $p6x, $p6y, $p7x, $p7y, $p8x, $p8y, $p9x, $p9y, $p10x, $p10y ; 坐标
 Global $current_point, $second_last, $price_last, $aData[61][7]  ; 记录
-Global $g_bPaused, $g_bPosCal, $g_bInfo, $g_bPriceLog, $g_bBeep, $g_bLatency, $g_bLibBuilding, $g_bImportPlan; 标志
+Global $g_bPaused, $g_bPosCal, $g_bInfo, $g_bPriceLog, $g_bBeep, $g_bLatency, $g_bLibBuilding, $g_bImportPlan,$g_bHint ; 标志
 Global $g_bMagnify, $p_idMagnify, $g_dMagFactor, $MagSource_left, $MagSource_top, $MagSource_width, $MagSource_height, $Magnify_left, $Magnify_top ; 放大镜
 
 ;data form : last 1 minute price log
@@ -58,15 +59,25 @@ For $i = 0 to 60
 	$aData[$i][0] = $i
 Next
 _GUICtrlListView_AddArray($ListViewData, $aData)
+_GUICtrlListView_SetView ($ListViewData, 1)
 
-#Region ### START Koda GUI section ### Form=form_info.kxf
-$Form_Info = GUICreate("Info", 424, 79, 391, 286, $WS_POPUP, $WS_EX_TOPMOST)
+#Region ### START Koda GUI section ### Form=c:\work\form_hint.kxf
+$Form_hint = GUICreate("hint", 451, 81, -1, -1, $WS_POPUP, $WS_EX_TOPMOST)
+GUISetBkColor(0xFF00FF)
+$LabelHint = GUICtrlCreateLabel("等待11:00:00", 0, 0, 450, 63, BitOR($SS_CENTER,$SS_CENTERIMAGE), $GUI_WS_EX_PARENTDRAG)
+GUICtrlSetFont(-1, 30, 800, 0, "Microsoft YaHei UI")
+$ProgressTime = GUICtrlCreateProgress(0, 63, 450, 17)
+GUISetState(@SW_SHOW)
+#EndRegion ### END Koda GUI section ###
+
+#Region ### START Koda GUI section ### Form=c:\work\form_info.kxf
+$Form_Info = GUICreate("Info", 444, 75, 322, 188, $WS_POPUP, $WS_EX_TOPMOST)
 GUISetBkColor(0xA6CAF0)
-$LabelTime = GUICtrlCreateLabel("11:00:00", 0, 0, 176, 56, $SS_CENTER, $GUI_WS_EX_PARENTDRAG)
+$LabelTime = GUICtrlCreateLabel("11:00:00", 0, 0, 185, 54, $SS_CENTER, BitOR($WS_EX_CLIENTEDGE,$GUI_WS_EX_PARENTDRAG))
 GUICtrlSetFont(-1, 30, 800, 0, "Microsoft YaHei UI")
-$LabelDiff = GUICtrlCreateLabel("diff", 180, 0, 99, 56, $SS_RIGHT, $GUI_WS_EX_PARENTDRAG)
+$LabelDiff = GUICtrlCreateLabel("0000", 184, 0, 118, 54, $SS_CENTER, BitOR($WS_EX_CLIENTEDGE,$GUI_WS_EX_PARENTDRAG))
 GUICtrlSetFont(-1, 30, 800, 0, "Microsoft YaHei UI")
-$LabelPrice = GUICtrlCreateLabel("00000", 288, 0, 129, 56, $SS_RIGHT, $GUI_WS_EX_PARENTDRAG)
+$LabelPrice = GUICtrlCreateLabel("00000", 300, 0, 142, 54, $SS_CENTER, BitOR($WS_EX_CLIENTEDGE,$GUI_WS_EX_PARENTDRAG))
 GUICtrlSetFont(-1, 30, 800, 0, "Microsoft YaHei UI")
 $StatusBar_Info = _GUICtrlStatusBar_Create($Form_Info)
 Dim $StatusBar_Info_PartsWidth[7] = [55, 95, 140, 195, 265, 335, -1]
@@ -117,6 +128,7 @@ $EditRemark = GUICtrlCreateEdit("", 6, 27, 318, 178, BitOR($ES_AUTOVSCROLL,$ES_W
 GUICtrlSetData(-1, "EditRemark")
 $TabSheet_Lib = GUICtrlCreateTabItem("建立字库")
 $ButtonLibBuilder = GUICtrlCreateButton("开始", 131, 175, 65, 29)
+GUICtrlSetTip(-1, "须确认上述字符是否能够正常识别")
 $Checkbox1 = GUICtrlCreateCheckbox("数字1", 49, 40, 60, 25)
 GUICtrlSetState(-1, $GUI_DISABLE)
 $Checkbox2 = GUICtrlCreateCheckbox("数字2", 49, 64, 60, 25)
@@ -201,7 +213,9 @@ $InputA3T = GUICtrlCreateInput("??", 92, 150, 25, 21)
 $InputMsec = GUICtrlCreateInput("???", 120, 150, 33, 21)
 $InputBCL = GUICtrlCreateInput("???", 204, 102, 33, 21)
 $InputLCL = GUICtrlCreateInput("???", 186, 126, 33, 21)
+GUICtrlSetTip(-1, "超差下线")
 $InputUCL = GUICtrlCreateInput("???", 222, 126, 33, 21)
+GUICtrlSetTip(-1, "超差上线")
 $InputACL = GUICtrlCreateInput("???", 204, 150, 33, 21)
 $InputD2P = GUICtrlCreateInput("???", 284, 54, 33, 21)
 $InputD3P = GUICtrlCreateInput("???", 284, 78, 33, 21)
@@ -265,19 +279,27 @@ GUICtrlSetTip(-1, "新增方案")
 $ButtonDelPlan = GUICtrlCreateButton("-", 66, 181, 23, 23)
 GUICtrlSetTip(-1, "删除方案")
 $TabSheet_Tools = GUICtrlCreateTabItem("工具")
+GUICtrlSetState(-1,$GUI_SHOW)
 $CheckboxPricelog = GUICtrlCreateCheckbox("数据记录", 20, 41, 65, 17)
 $CheckboxMagn = GUICtrlCreateCheckbox("验证码放大镜", 20, 73, 97, 17)
 $CheckboxInfo = GUICtrlCreateCheckbox("信息提示", 20, 105, 65, 17)
 GUICtrlSetState(-1, $GUI_CHECKED)
-$CheckboxLatency = GUICtrlCreateCheckbox("服务器延迟", 20, 169, 81, 17)
+$CheckboxLatency = GUICtrlCreateCheckbox("服务器延迟", 168, 105, 81, 17)
+GUICtrlSetState(-1, $GUI_DISABLE)
 $ButtonCopyLog = GUICtrlCreateButton("复制记录", 168, 37, 65, 25)
+GUICtrlSetTip(-1, "复制数据和当前参数到粘贴板")
 $ButtonSetLogWidth = GUICtrlCreateButton("自动展宽", 248, 37, 65, 25)
+GUICtrlSetTip(-1, "自动调整列宽")
 $SliderMagFactor = GUICtrlCreateSlider(240, 72, 81, 25)
 GUICtrlSetLimit(-1, 12, 4)
 GUICtrlSetData(-1, 8)
 GUICtrlSetState(-1, $GUI_DISABLE)
+GUICtrlSetTip(-1, "放大倍率1～3")
 $ButtonSetMag = GUICtrlCreateButton("区域设定", 168, 69, 65, 25)
-$CheckboxBeep = GUICtrlCreateCheckbox("按键提示音", 20, 137, 81, 17)
+GUICtrlSetTip(-1, "放大区域")
+$CheckboxBeep = GUICtrlCreateCheckbox("按键提示音", 20, 169, 81, 17)
+$CheckboxHint = GUICtrlCreateCheckbox("进度提示", 20, 137, 65, 17)
+GUICtrlSetState(-1, $GUI_CHECKED)
 GUICtrlCreateTabItem("")
 $ButtonApply = GUICtrlCreateButton("应用", 131, 210, 65, 29)
 $ButtonSave = GUICtrlCreateButton("保存", 196, 210, 65, 29)
@@ -322,6 +344,7 @@ $drift3b = IniRead("hupai.ini", "Drift", "Drift3U", "0")
 $drift3c = IniRead("hupai.ini", "Drift", "Drift3L", "0")
 $acl = IniRead("hupai.ini", "Drift", "DifferenceLimit", "0")
 $g_bInfo = IniRead("hupai.ini", "Tools", "Info", "1")
+$g_bHint = IniRead("hupai.ini", "Tools", "Hint", "1")
 $g_bPriceLog = IniRead("hupai.ini", "Tools", "PriceLog", "0")
 $g_bMagnify = IniRead("hupai.ini", "Tools", "Magnify", "0")
 $g_bLatency = IniRead("hupai.ini", "Tools", "Latency", "0")
@@ -363,6 +386,7 @@ HotKeySet("{NUMPADADD}", "ApplyBid")
 Func GuiInit()
 	RestoreParameter()
 	InitializeInfo()
+	InitializeHint()
 	InitializeData()
 	If $g_bMagnify = 1 Then
 		InitializeMagn()
@@ -407,6 +431,11 @@ Func RestoreParameter() ;restore parameters in setting window from variable
 		GUICtrlSetState($CheckboxInfo, $GUI_UNCHECKED)
 	Else
 		GUICtrlSetState($CheckboxInfo, $GUI_CHECKED)
+	Endif
+	If $g_bHint = 0 Then
+		GUICtrlSetState($CheckboxHint, $GUI_UNCHECKED)
+	Else
+		GUICtrlSetState($CheckboxHint, $GUI_CHECKED)
 	Endif
 	If $g_bPriceLog = 0 Then
 		GUICtrlSetState($CheckboxPricelog, $GUI_UNCHECKED)
@@ -461,6 +490,15 @@ Func InitializeInfo()
 	EndIf
 EndFunc   ;==>InitializeInfo
 
+Func InitializeHint()
+	GUICtrlSetData($LabelHint, "等待11:29:00")
+	If $g_bHint = 0 Then
+		GUISetState(@SW_HIDE, $Form_hint)
+	Else
+		GUISetState(@SW_SHOW, $Form_hint)
+	EndIf
+EndFunc   ;==>InitializeHint
+
 Func InitializeData()
 	for $i = 0 to 60
 		_GUICtrlListView_AddSubItem($ListViewData, $i, "", 1)
@@ -504,6 +542,13 @@ Func GuiCustom();move tool windows to where it used to be
 		$iTempTop = Int(@DesktopHeight / 2)
 	EndIf
 	WinMove("Info", "", $iTempLeft, $iTempTop)
+	$iTempLeft = IniRead("hupai.ini", "Display", "Hint_left", 100)
+	$iTempTop = IniRead("hupai.ini", "Display", "Hint_top", 100)
+	If ($iTempLeft > @DesktopWidth) Or ($iTempTop > @DesktopHeight) Then
+		$iTempLeft = Int(@DesktopWidth / 2)
+		$iTempTop = Int(@DesktopHeight / 2)
+	EndIf
+	WinMove("hint", "", $iTempLeft, $iTempTop)
 	$iTempLeft = IniRead("hupai.ini", "Display", "Pos_left", 100)
 	$iTempTop = IniRead("hupai.ini", "Display", "Pos_top", 100)
 	If ($iTempLeft > @DesktopWidth) Or ($iTempTop > @DesktopHeight) Then
@@ -676,6 +721,7 @@ Func SaveIniFile()
 	IniWrite("hupai.ini", "Drift", "Drift3L", $drift3c)
 	IniWrite("hupai.ini", "Drift", "DifferenceLimit", $acl)
 	IniWrite("hupai.ini", "Tools", "Info", $g_bInfo)
+	IniWrite("hupai.ini", "Tools", "Hint", $g_bHint)
 	IniWrite("hupai.ini", "Tools", "PriceLog", $g_bPriceLog)
 	IniWrite("hupai.ini", "Tools", "Magnify", $g_bMagnify)
 	IniWrite("hupai.ini", "Tools", "Latency", $g_bLatency)
@@ -684,6 +730,8 @@ Func SaveIniFile()
 	IniWrite("hupai.ini", "Display", "Setting_top", WinGetPos("Setting")[1])
 	IniWrite("hupai.ini", "Display", "Info_left", WinGetPos("Info")[0])
 	IniWrite("hupai.ini", "Display", "Info_top", WinGetPos("Info")[1])
+	IniWrite("hupai.ini", "Display", "Hint_left", WinGetPos("hint")[0])
+	IniWrite("hupai.ini", "Display", "Hint_top", WinGetPos("hint")[1])
 	IniWrite("hupai.ini", "Display", "Pos_left", WinGetPos("Pos")[0])
 	IniWrite("hupai.ini", "Display", "Pos_top", WinGetPos("Pos")[1])
 	IniWrite("hupai.ini", "Display", "PriceLog_left", WinGetPos("PriceLog")[0])
@@ -1099,6 +1147,15 @@ Func HandleGuiMsg()
 				Case $GUI_UNCHECKED
 					GUISetState(@SW_HIDE, $Form_Info)
 					$g_bInfo = 0
+			EndSwitch
+		Case $CheckboxHint
+			Switch GUICtrlRead($CheckboxHint)
+				Case $GUI_CHECKED
+					GUISetState(@SW_SHOW, $Form_hint)
+					$g_bHint = 1
+				Case $GUI_UNCHECKED
+					GUISetState(@SW_HIDE, $Form_hint)
+					$g_bHint = 0
 			EndSwitch
 		Case $CheckboxLatency
 			MsgBox(0,"Warning","Under Construction!");待开发
@@ -1648,15 +1705,54 @@ While 1 ;mainloop
 			GUICtrlSetData($LabelDiff, $difference)
 		EndIf
 		;reflash fps,latency... every second
-		If $tt = @SEC Then
+		If $sec_info = @SEC Then
 			$fps = $fps + 1
 		Else
 			_GUICtrlStatusBar_SetText($StatusBar_Info, @HOUR & ":" & @MIN & ":" & @SEC, 0)
 			_GUICtrlStatusBar_SetText($StatusBar_Info, "fps" & $fps, 1)
 			_GUICtrlStatusBar_SetText($StatusBar_Info, $lag & "???ms ", 2)
 			$fps = 0
-			$tt = @SEC
+			$sec_info = @SEC
 		EndIf
+	EndIf
+	;Hint and progress
+	If $g_bHint Then
+		If $sec_hint = @SEC Then
+
+		Else
+			If StringLeft($time, 6) <> $g_sLastMinute Then
+				GUICtrlSetData($LabelHint, "等待11:29:00")
+			Else
+				Switch $status
+					Case 1
+						GUICtrlSetData($LabelHint, "准备输验证码")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) + 1) / $bid2time * 100)
+					Case 2
+						GUICtrlSetData($LabelHint, "输码,按Num+,按Num-")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) - $bid2time + 1) / ($bid3time - $bid2time) * 100)
+					Case 3
+						GUICtrlSetData($LabelHint, "输码,勿按Num+")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) - $bid3time + 1) / ($check3time - $bid3time) * 100)
+					Case 4
+						GUICtrlSetData($LabelHint, "输码,按Num+")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) - $check3time + 1) / (60 - $check3time) * 100)
+					Case 5
+						GUICtrlSetData($LabelHint, "价格正常,勿按Num+")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) - $check3time + 1) / ($apply3time - $check3time) * 100)
+					Case 6
+						GUICtrlSetData($LabelHint, "已确认出价")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) - $apply3time + 1) / (60 - $apply3time) * 100)
+					Case 7
+						GUICtrlSetData($LabelHint, "输码,按Num+")
+						GUICtrlSetData($ProgressTime, (Int(StringRight($time, 2)) - $check3time + 1) / (60 - $check3time) * 100)
+				EndSwitch
+			EndIf
+
+			$sec_hint = @SEC
+		EndIf
+
+
+
 	EndIf
 WEnd
 

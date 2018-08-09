@@ -66,7 +66,7 @@
 				<property name="Top" vt="Int8">0</property>
 				<property name="Width" vt="Int16">330</property>
 				<property name="Height" vt="Int16">210</property>
-				<property name="ActivePage" vt="Ident">TabSheet_RM</property>
+				<property name="ActivePage" vt="Ident">TabSheet_Tools</property>
 				<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
 				<property name="Font.Color" vt="Ident">clWindowText</property>
 				<property name="Font.Height" vt="Int8">-11</property>
@@ -129,6 +129,7 @@
 								<property name="Top" vt="Int16">150</property>
 								<property name="Width" vt="Int8">65</property>
 								<property name="Height" vt="Int8">29</property>
+								<property name="Hint" vt="WString">须确认上述字符是否能够正常识别</property>
 								<property name="Caption" vt="WString">开始</property>
 								<property name="TabOrder" vt="Int8">0</property>
 								<property name="Color" vt="Ident">clBtnFace</property>
@@ -959,6 +960,7 @@
 								<property name="Top" vt="Int8">101</property>
 								<property name="Width" vt="Int8">33</property>
 								<property name="Height" vt="Int8">21</property>
+								<property name="Hint" vt="WString">超差上线</property>
 								<property name="TabOrder" vt="Int8">8</property>
 								<property name="Text" vt="String">???</property>
 								<property name="CtrlStyle" vt="Int32">1342374016</property>
@@ -973,6 +975,7 @@
 								<property name="Top" vt="Int8">101</property>
 								<property name="Width" vt="Int8">33</property>
 								<property name="Height" vt="Int8">21</property>
+								<property name="Hint" vt="WString">超差下线</property>
 								<property name="TabOrder" vt="Int8">7</property>
 								<property name="Text" vt="String">???</property>
 								<property name="CtrlStyle" vt="Int32">1342374016</property>
@@ -1556,11 +1559,12 @@
 						</object>
 						<object type="TACheckbox" name="CheckboxLatency">
 							<properties>
-								<property name="Left" vt="Int8">16</property>
-								<property name="Top" vt="Int16">144</property>
+								<property name="Left" vt="Int16">164</property>
+								<property name="Top" vt="Int8">80</property>
 								<property name="Width" vt="Int8">81</property>
 								<property name="Height" vt="Int8">17</property>
 								<property name="Caption" vt="WString">服务器延迟</property>
+								<property name="Enabled" vt="False">False</property>
 								<property name="TabOrder" vt="Int8">3</property>
 								<property name="CtrlStyle" vt="Int32">1342242819</property>
 								<property name="CtrlExStyle" vt="Int8">0</property>
@@ -1574,6 +1578,7 @@
 								<property name="Top" vt="Int8">12</property>
 								<property name="Width" vt="Int8">65</property>
 								<property name="Height" vt="Int8">25</property>
+								<property name="Hint" vt="WString">复制数据和当前参数到粘贴板</property>
 								<property name="Caption" vt="WString">复制记录</property>
 								<property name="TabOrder" vt="Int8">4</property>
 								<property name="Color" vt="Ident">clBtnFace</property>
@@ -1589,6 +1594,7 @@
 								<property name="Top" vt="Int8">12</property>
 								<property name="Width" vt="Int8">65</property>
 								<property name="Height" vt="Int8">25</property>
+								<property name="Hint" vt="WString">自动调整列宽</property>
 								<property name="Caption" vt="WString">自动展宽</property>
 								<property name="TabOrder" vt="Int8">5</property>
 								<property name="Color" vt="Ident">clBtnFace</property>
@@ -1604,6 +1610,7 @@
 								<property name="Top" vt="Int8">47</property>
 								<property name="Width" vt="Int8">81</property>
 								<property name="Height" vt="Int8">25</property>
+								<property name="Hint" vt="WString">放大倍率1～3</property>
 								<property name="Enabled" vt="False">False</property>
 								<property name="Max" vt="Int8">12</property>
 								<property name="Min" vt="Int8">4</property>
@@ -1622,6 +1629,7 @@
 								<property name="Top" vt="Int8">44</property>
 								<property name="Width" vt="Int8">65</property>
 								<property name="Height" vt="Int8">25</property>
+								<property name="Hint" vt="WString">放大区域</property>
 								<property name="Caption" vt="WString">区域设定</property>
 								<property name="TabOrder" vt="Int8">7</property>
 								<property name="Color" vt="Ident">clBtnFace</property>
@@ -1634,11 +1642,27 @@
 						<object type="TACheckbox" name="CheckboxBeep">
 							<properties>
 								<property name="Left" vt="Int8">16</property>
-								<property name="Top" vt="Int8">112</property>
+								<property name="Top" vt="Int16">144</property>
 								<property name="Width" vt="Int8">81</property>
 								<property name="Height" vt="Int8">17</property>
 								<property name="Caption" vt="WString">按键提示音</property>
 								<property name="TabOrder" vt="Int8">8</property>
+								<property name="CtrlStyle" vt="Int32">1342242819</property>
+								<property name="CtrlExStyle" vt="Int8">0</property>
+								<property name="Resizing" vt="Set">DockHeight</property>
+							</properties>
+							<components/>
+						</object>
+						<object type="TACheckbox" name="CheckboxHint">
+							<properties>
+								<property name="Left" vt="Int8">16</property>
+								<property name="Top" vt="Int8">112</property>
+								<property name="Width" vt="Int8">65</property>
+								<property name="Height" vt="Int8">17</property>
+								<property name="Caption" vt="WString">进度提示</property>
+								<property name="Checked" vt="True">True</property>
+								<property name="State" vt="Ident">cbChecked</property>
+								<property name="TabOrder" vt="Int8">9</property>
 								<property name="CtrlStyle" vt="Int32">1342242819</property>
 								<property name="CtrlExStyle" vt="Int8">0</property>
 								<property name="Resizing" vt="Set">DockHeight</property>
