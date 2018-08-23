@@ -9,6 +9,8 @@
 #ce ----------------------------------------------------------------------------
 ; Script Start - Add your code below here
 ;~ #Include <_Dbug.au3> ;for debug
+#NoTrayIcon
+#RequireAdmin
 Opt("WinTitleMatchMode", 2)
 $g_szVersion = "hupai20180518"
 If WinExists($g_szVersion) Then
